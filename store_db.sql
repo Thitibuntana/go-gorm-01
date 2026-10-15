@@ -1,6 +1,3 @@
--- Store Management System - MySQL/MariaDB (XAMPP)
--- Import this file in phpMyAdmin or run: mysql -u root < store_db.sql
-
 CREATE DATABASE IF NOT EXISTS `store_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE `store_db`;
@@ -100,32 +97,31 @@ VALUES (
         1,
         NOW(3),
         NOW(3),
-        'Computers',
-        'Notebook and desktop computers'
+        'Workstations',
+        'Portable and desktop work computers'
     ),
     (
         2,
         NOW(3),
         NOW(3),
-        'Smartphones',
-        'Mobile phones and smartphones'
+        'Mobiles',
+        'Smartphones and mobile devices'
     ),
     (
         3,
         NOW(3),
         NOW(3),
-        'Accessories',
-        'Computer and mobile accessories'
+        'Peripherals',
+        'Input and output accessories'
     ),
     (
         4,
         NOW(3),
         NOW(3),
-        'Networking',
-        'Network devices and equipment'
+        'Network',
+        'Connectivity and routing equipment'
     );
 
--- Quantities below already reflect the 12 sample orders inserted later.
 INSERT INTO
     `products` (
         `id`,
@@ -140,7 +136,7 @@ VALUES (
         1,
         NOW(3),
         NOW(3),
-        'MacBook Air M3',
+        'NovaBook Air S9',
         39900.00,
         8,
         1
@@ -149,7 +145,7 @@ VALUES (
         2,
         NOW(3),
         NOW(3),
-        'ASUS Vivobook 15',
+        'Aster Laptop Pro 15',
         22990.00,
         14,
         1
@@ -158,7 +154,7 @@ VALUES (
         3,
         NOW(3),
         NOW(3),
-        'Lenovo IdeaPad Slim 3',
+        'Vertex Slim 3',
         18990.00,
         10,
         1
@@ -167,7 +163,7 @@ VALUES (
         4,
         NOW(3),
         NOW(3),
-        'Dell Inspiron 14',
+        'Orbit Laptop 14',
         24990.00,
         6,
         1
@@ -176,7 +172,7 @@ VALUES (
         5,
         NOW(3),
         NOW(3),
-        'iPhone 16',
+        'PulsePhone X1',
         29900.00,
         18,
         2
@@ -185,7 +181,7 @@ VALUES (
         6,
         NOW(3),
         NOW(3),
-        'Samsung Galaxy S24',
+        'Signal Galaxy Z9',
         27900.00,
         12,
         2
@@ -194,7 +190,7 @@ VALUES (
         7,
         NOW(3),
         NOW(3),
-        'Google Pixel 9',
+        'North Pixel 9',
         26900.00,
         7,
         2
@@ -203,7 +199,7 @@ VALUES (
         8,
         NOW(3),
         NOW(3),
-        'Logitech Mouse M331',
+        'Cursor Pro Mouse',
         690.00,
         43,
         3
@@ -212,7 +208,7 @@ VALUES (
         9,
         NOW(3),
         NOW(3),
-        'Mechanical Keyboard K8',
+        'Echo Keypad K8',
         3290.00,
         21,
         3
@@ -221,7 +217,7 @@ VALUES (
         10,
         NOW(3),
         NOW(3),
-        'USB-C Hub 8-in-1',
+        'LinkHub Dock 8',
         1490.00,
         32,
         3
@@ -230,7 +226,7 @@ VALUES (
         11,
         NOW(3),
         NOW(3),
-        '27-inch Monitor',
+        'Vision Display 27',
         7990.00,
         8,
         3
@@ -239,7 +235,7 @@ VALUES (
         12,
         NOW(3),
         NOW(3),
-        'External SSD 1TB',
+        'RapidDrive SSD 1TB',
         3590.00,
         19,
         3
@@ -248,7 +244,7 @@ VALUES (
         13,
         NOW(3),
         NOW(3),
-        'Wi-Fi 6 Router AX3000',
+        'AirWave Router AX3000',
         2590.00,
         13,
         4
@@ -257,7 +253,7 @@ VALUES (
         14,
         NOW(3),
         NOW(3),
-        '8-Port Gigabit Switch',
+        'Metro Switch 8',
         1290.00,
         16,
         4
@@ -266,7 +262,7 @@ VALUES (
         15,
         NOW(3),
         NOW(3),
-        'Cat6 LAN Cable 10m',
+        'CableFlow LAN 10m',
         290.00,
         48,
         4
@@ -285,47 +281,47 @@ VALUES (
         1,
         NOW(3),
         NOW(3),
-        'Anan Chai',
-        'anan@example.com',
+        'Ari Ploy',
+        'ari@example.com',
         '0811111111'
     ),
     (
         2,
         NOW(3),
         NOW(3),
-        'Benjamas Dee',
-        'benjamas@example.com',
+        'Boonchai Niran',
+        'boonchai@example.com',
         '0822222222'
     ),
     (
         3,
         NOW(3),
         NOW(3),
-        'Chaiwat Mee',
-        'chaiwat@example.com',
+        'Chalerm Sai',
+        'chalerm@example.com',
         '0833333333'
     ),
     (
         4,
         NOW(3),
         NOW(3),
-        'Daranee Rak',
-        'daranee@example.com',
+        'Dara Wut',
+        'dara@example.com',
         '0844444444'
     ),
     (
         5,
         NOW(3),
         NOW(3),
-        'Ekkachai Suk',
-        'ekkachai@example.com',
+        'Ekkarat Sorn',
+        'ekkarat@example.com',
         '0855555555'
     ),
     (
         6,
         NOW(3),
         NOW(3),
-        'Fah Sai',
+        'Fah Suda',
         'fah@example.com',
         '0866666666'
     ),
@@ -333,16 +329,16 @@ VALUES (
         7,
         NOW(3),
         NOW(3),
-        'Krit Keng',
-        'krit@example.com',
+        'Kittisak Nuan',
+        'kittisak@example.com',
         '0877777777'
     ),
     (
         8,
         NOW(3),
         NOW(3),
-        'Lalita Jai',
-        'lalita@example.com',
+        'Lada Chai',
+        'lada@example.com',
         '0888888888'
     );
 

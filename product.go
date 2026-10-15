@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func createProductDB(db *gorm.DB, product *Product) error {
+func addProduct(db *gorm.DB, product *Product) error {
 	if product == nil {
 		return errors.New("product is required")
 	}
@@ -25,31 +25,31 @@ func createProductDB(db *gorm.DB, product *Product) error {
 	return db.Create(product).Error
 }
 
-func getAllProductsDB(db *gorm.DB) ([]Product, error) {
+func fetchAllProducts(db *gorm.DB) ([]Product, error) {
 	var products []Product
 	err := db.Preload("Category").Find(&products).Error
 	return products, err
 }
 
-func getProductByIDDB(db *gorm.DB, id uint) (*Product, error) {
+func fetchProductByID(db *gorm.DB, id uint) (*Product, error) {
 	var product Product
 	err := db.Preload("Category").First(&product, id).Error
 	return &product, err
 }
 
-func getProductByNameDB(db *gorm.DB, name string) ([]Product, error) {
+func fetchProductsByName(db *gorm.DB, name string) ([]Product, error) {
 	var products []Product
 	err := db.Preload("Category").Where("name LIKE ?", "%"+name+"%").Find(&products).Error
 	return products, err
 }
 
-func getProductsByCategoryDB(db *gorm.DB, categoryID uint) ([]Product, error) {
-	var products []Product
-	err := db.Preload("Category").Where("category_id = ?", categoryID).Find(&products).Error
-	return products, err
+func fetchProductsByCategory(db *gorm.DB, categoryID uint) ([]Product, error) {
+	var items []Product
+	err := db.Preload("Category").Where("category_id = ?", categoryID).Find(&items).Error
+	return items, err
 }
 
-func getProductsByPriceRangeDB(db *gorm.DB, minPrice, maxPrice float64) ([]Product, error) {
+func fetchProductsInPriceRange(db *gorm.DB, minPrice, maxPrice float64) ([]Product, error) {
 	if minPrice < 0 || maxPrice < minPrice {
 		return nil, errors.New("invalid price range")
 	}
@@ -58,7 +58,7 @@ func getProductsByPriceRangeDB(db *gorm.DB, minPrice, maxPrice float64) ([]Produ
 	return products, err
 }
 
-func getProductsLowStockDB(db *gorm.DB, threshold int) ([]Product, error) {
+func fetchLowStockProducts(db *gorm.DB, threshold int) ([]Product, error) {
 	if threshold < 0 {
 		return nil, errors.New("stock threshold must not be negative")
 	}
@@ -67,7 +67,7 @@ func getProductsLowStockDB(db *gorm.DB, threshold int) ([]Product, error) {
 	return products, err
 }
 
-func getProductsByCategoryAndPriceDB(db *gorm.DB, categoryID uint, minPrice, maxPrice float64) ([]Product, error) {
+func fetchProductsByCategoryAndPrice(db *gorm.DB, categoryID uint, minPrice, maxPrice float64) ([]Product, error) {
 	if minPrice < 0 || maxPrice < minPrice {
 		return nil, errors.New("invalid price range")
 	}
@@ -76,7 +76,7 @@ func getProductsByCategoryAndPriceDB(db *gorm.DB, categoryID uint, minPrice, max
 	return products, err
 }
 
-func getProductsSortedByPriceDB(db *gorm.DB, direction string) ([]Product, error) {
+func fetchProductsSortedByPrice(db *gorm.DB, direction string) ([]Product, error) {
 	direction = strings.ToUpper(strings.TrimSpace(direction))
 	if direction != "ASC" && direction != "DESC" {
 		return nil, errors.New("sort direction must be ASC or DESC")
@@ -86,7 +86,7 @@ func getProductsSortedByPriceDB(db *gorm.DB, direction string) ([]Product, error
 	return products, err
 }
 
-func getTopExpensiveProductsDB(db *gorm.DB, limit int) ([]Product, error) {
+func fetchTopPricedProducts(db *gorm.DB, limit int) ([]Product, error) {
 	if limit <= 0 {
 		return nil, errors.New("limit must be greater than zero")
 	}
@@ -95,7 +95,7 @@ func getTopExpensiveProductsDB(db *gorm.DB, limit int) ([]Product, error) {
 	return products, err
 }
 
-func updateProductByIDDB(db *gorm.DB, id uint, update *Product) error {
+func changeProductByID(db *gorm.DB, id uint, update *Product) error {
 	if update == nil || strings.TrimSpace(update.Name) == "" {
 		return errors.New("product name is required")
 	}
@@ -106,21 +106,23 @@ func updateProductByIDDB(db *gorm.DB, id uint, update *Product) error {
 		return fmt.Errorf("category not found: %w", err)
 	}
 	result := db.Model(&Product{}).Where("id = ?", id).Updates(map[string]any{
-		"name": update.Name, "price": update.Price, "quantity": update.Quantity, "category_id": update.CategoryID,
+		"name":       update.Name,
+		"price":      update.Price,
+		"quantity":   update.Quantity,
+		"category_id": update.CategoryID,
 	})
-	return rowsAffectedError(result, "product", id)
+	return handleRowsAffected(result, "product", id)
 }
 
-func updateProductPriceDB(db *gorm.DB, id uint, price float64) error {
+func changeProductPrice(db *gorm.DB, id uint, price float64) error {
 	if price < 0 {
 		return errors.New("price must not be negative")
 	}
 	result := db.Model(&Product{}).Where("id = ?", id).Update("price", price)
-	return rowsAffectedError(result, "product", id)
+	return handleRowsAffected(result, "product", id)
 }
 
-// updateProductStockDB applies a positive or negative delta atomically.
-func updateProductStockDB(db *gorm.DB, id uint, quantityChange int) error {
+func adjustProductStock(db *gorm.DB, id uint, quantityChange int) error {
 	result := db.Model(&Product{}).
 		Where("id = ? AND quantity + ? >= 0", id, quantityChange).
 		UpdateColumn("quantity", gorm.Expr("quantity + ?", quantityChange))
@@ -133,13 +135,12 @@ func updateProductStockDB(db *gorm.DB, id uint, quantityChange int) error {
 	return nil
 }
 
-func softDeleteProductDB(db *gorm.DB, id uint) error {
+func softRemoveProduct(db *gorm.DB, id uint) error {
 	result := db.Delete(&Product{}, id)
-	return rowsAffectedError(result, "product", id)
+	return handleRowsAffected(result, "product", id)
 }
 
-// hardDeleteProductDB prohibits permanent deletion when order history exists.
-func hardDeleteProductDB(db *gorm.DB, id uint) error {
+func hardRemoveProduct(db *gorm.DB, id uint) error {
 	var count int64
 	if err := db.Unscoped().Model(&Order{}).Where("product_id = ?", id).Count(&count).Error; err != nil {
 		return err
@@ -148,21 +149,21 @@ func hardDeleteProductDB(db *gorm.DB, id uint) error {
 		return fmt.Errorf("cannot permanently delete product %d: it is used by %d order(s)", id, count)
 	}
 	result := db.Unscoped().Delete(&Product{}, id)
-	return rowsAffectedError(result, "product", id)
+	return handleRowsAffected(result, "product", id)
 }
 
-func getDeletedProductsDB(db *gorm.DB) ([]Product, error) {
+func fetchRemovedProducts(db *gorm.DB) ([]Product, error) {
 	var products []Product
 	err := db.Unscoped().Preload("Category").Where("products.deleted_at IS NOT NULL").Find(&products).Error
 	return products, err
 }
 
-func restoreProductDB(db *gorm.DB, id uint) error {
+func restoreProduct(db *gorm.DB, id uint) error {
 	result := db.Unscoped().Model(&Product{}).Where("id = ? AND deleted_at IS NOT NULL", id).Update("deleted_at", nil)
-	return rowsAffectedError(result, "deleted product", id)
+	return handleRowsAffected(result, "deleted product", id)
 }
 
-func rowsAffectedError(result *gorm.DB, entity string, id uint) error {
+func handleRowsAffected(result *gorm.DB, entity string, id uint) error {
 	if result.Error != nil {
 		return result.Error
 	}

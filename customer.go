@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func createCustomerDB(db *gorm.DB, customer *Customer) error {
+func addCustomer(db *gorm.DB, customer *Customer) error {
 	if customer == nil {
 		return errors.New("customer is required")
 	}
@@ -21,13 +21,13 @@ func createCustomerDB(db *gorm.DB, customer *Customer) error {
 	return db.Create(customer).Error
 }
 
-func getCustomerByEmailDB(db *gorm.DB, email string) (*Customer, error) {
+func fetchCustomerByEmail(db *gorm.DB, email string) (*Customer, error) {
 	var customer Customer
 	err := db.Where("email = ?", strings.ToLower(strings.TrimSpace(email))).First(&customer).Error
 	return &customer, err
 }
 
-func updateCustomerByIDDB(db *gorm.DB, id uint, update *Customer) error {
+func changeCustomerByID(db *gorm.DB, id uint, update *Customer) error {
 	if update == nil {
 		return errors.New("customer is required")
 	}
@@ -35,23 +35,24 @@ func updateCustomerByIDDB(db *gorm.DB, id uint, update *Customer) error {
 		return errors.New("customer name, email and phone are required")
 	}
 	result := db.Model(&Customer{}).Where("id = ?", id).Updates(map[string]any{
-		"name": strings.TrimSpace(update.Name), "email": strings.ToLower(strings.TrimSpace(update.Email)), "phone": strings.TrimSpace(update.Phone),
+		"name":  strings.TrimSpace(update.Name),
+		"email": strings.ToLower(strings.TrimSpace(update.Email)),
+		"phone": strings.TrimSpace(update.Phone),
 	})
-	return rowsAffectedError(result, "customer", id)
+	return handleRowsAffected(result, "customer", id)
 }
 
-// deleteCustomerByIDDB refuses to delete customers that have order history.
-func deleteCustomerByIDDB(db *gorm.DB, id uint) error {
+func removeCustomerByID(db *gorm.DB, id uint) error {
 	var customer Customer
 	if err := db.First(&customer, id).Error; err != nil {
 		return err
 	}
-	var count int64
-	if err := db.Unscoped().Model(&Order{}).Where("customer_id = ?", id).Count(&count).Error; err != nil {
+	var orderCount int64
+	if err := db.Unscoped().Model(&Order{}).Where("customer_id = ?", id).Count(&orderCount).Error; err != nil {
 		return err
 	}
-	if count > 0 {
-		return fmt.Errorf("cannot delete customer %d: customer has %d order(s)", id, count)
+	if orderCount > 0 {
+		return fmt.Errorf("cannot delete customer %d: customer has %d order(s)", id, orderCount)
 	}
 	return db.Delete(&customer).Error
 }

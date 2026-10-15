@@ -10,12 +10,11 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func validOrderStatus(status string) bool {
-	return status == OrderStatusPending || status == OrderStatusCompleted || status == OrderStatusCancelled
+func isValidOrderStatus(status string) bool {
+	return status == pendingOrderStatus || status == completedOrderStatus || status == cancelledOrderStatus
 }
 
-// createOrderDB validates both relations and updates stock in one transaction.
-func createOrderDB(db *gorm.DB, order *Order) error {
+func addOrder(db *gorm.DB, order *Order) error {
 	if order == nil {
 		return errors.New("order is required")
 	}
@@ -23,9 +22,9 @@ func createOrderDB(db *gorm.DB, order *Order) error {
 		return errors.New("order quantity must be greater than zero")
 	}
 	if order.Status == "" {
-		order.Status = OrderStatusPending
+		order.Status = pendingOrderStatus
 	}
-	if !validOrderStatus(order.Status) {
+	if !isValidOrderStatus(order.Status) {
 		return errors.New("status must be Pending, Completed or Cancelled")
 	}
 
@@ -50,15 +49,15 @@ func createOrderDB(db *gorm.DB, order *Order) error {
 	})
 }
 
-func getOrdersByCustomerDB(db *gorm.DB, customerID uint) ([]Order, error) {
+func fetchOrdersForCustomer(db *gorm.DB, customerID uint) ([]Order, error) {
 	var orders []Order
 	err := db.Preload("Customer").Preload("Product").Where("customer_id = ?", customerID).Order("created_at DESC").Find(&orders).Error
 	return orders, err
 }
 
-func getOrdersByStatusDB(db *gorm.DB, status string) ([]Order, error) {
+func fetchOrdersByStatus(db *gorm.DB, status string) ([]Order, error) {
 	status = strings.TrimSpace(status)
-	if !validOrderStatus(status) {
+	if !isValidOrderStatus(status) {
 		return nil, errors.New("status must be Pending, Completed or Cancelled")
 	}
 	var orders []Order
@@ -66,7 +65,7 @@ func getOrdersByStatusDB(db *gorm.DB, status string) ([]Order, error) {
 	return orders, err
 }
 
-func getOrdersByDateRangeDB(db *gorm.DB, startDate, endDate time.Time) ([]Order, error) {
+func fetchOrdersInRange(db *gorm.DB, startDate, endDate time.Time) ([]Order, error) {
 	if endDate.Before(startDate) {
 		return nil, errors.New("end date must not be before start date")
 	}
@@ -75,17 +74,17 @@ func getOrdersByDateRangeDB(db *gorm.DB, startDate, endDate time.Time) ([]Order,
 	return orders, err
 }
 
-func getOrdersWithDetailsDB(db *gorm.DB) ([]Order, error) {
+func fetchOrdersWithDetails(db *gorm.DB) ([]Order, error) {
 	var orders []Order
 	err := db.Preload("Customer").Preload("Product").Preload("Product.Category").Order("created_at DESC").Find(&orders).Error
 	return orders, err
 }
 
-func updateOrderStatusDB(db *gorm.DB, id uint, status string) error {
+func changeOrderStatus(db *gorm.DB, id uint, status string) error {
 	status = strings.TrimSpace(status)
-	if !validOrderStatus(status) {
+	if !isValidOrderStatus(status) {
 		return errors.New("status must be Pending, Completed or Cancelled")
 	}
 	result := db.Model(&Order{}).Where("id = ?", id).Update("status", status)
-	return rowsAffectedError(result, "order", id)
+	return handleRowsAffected(result, "order", id)
 }

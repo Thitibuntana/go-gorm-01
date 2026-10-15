@@ -3,9 +3,9 @@ package main
 import "gorm.io/gorm"
 
 const (
-	OrderStatusPending   = "Pending"
-	OrderStatusCompleted = "Completed"
-	OrderStatusCancelled = "Cancelled"
+	pendingOrderStatus   = "Pending"
+	completedOrderStatus = "Completed"
+	cancelledOrderStatus = "Cancelled"
 )
 
 // Category has many products.
